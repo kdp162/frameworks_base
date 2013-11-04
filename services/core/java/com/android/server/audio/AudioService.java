@@ -748,6 +748,7 @@ public class AudioService extends IAudioService.Stub
 
         mVoiceCapable = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_voice_capable);
+
         createAudioSystemThread();
 
         AudioSystem.setErrorCallback(mAudioSystemCallback);

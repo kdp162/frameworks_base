@@ -4565,6 +4565,17 @@ public final class Settings {
         public static final String BLUETOOTH_SHOW_BATTERY = "bluetooth_show_battery";
 
         /**
+         * Volume key controls ringtone or media sound stream
+         * @hide
+         */
+        public static final String VOLUME_KEYS_CONTROL_RING_TONE =
+                "volume_keys_control_ring_tone";
+
+        /** @hide */
+        private static final Validator VOLUME_KEYS_CONTROL_RING_TONE_VALIDATOR =
+               BOOLEAN_VALIDATOR;
+
+        /**
          * Whether to display the 4g or lte network icon in the statusbar
          * @hide
          */
@@ -4722,6 +4733,7 @@ public final class Settings {
             NOTIFICATION_VIBRATION_INTENSITY,
             HAPTIC_FEEDBACK_INTENSITY,
             DISPLAY_COLOR_MODE,
+
             STATUS_BAR_CLOCK,
             STATUSBAR_CLOCK_STYLE,
             STATUS_BAR_CLOCK_SECONDS,
@@ -4731,6 +4743,7 @@ public final class Settings {
             STATUSBAR_CLOCK_DATE_FORMAT,
             USE_BOTTOM_GESTURE_NAVIGATION,
             ONE_HAND_MODE_ENABLED,
+            VOLUME_KEYS_CONTROL_RING_TONE,
         };
 
         /**
@@ -4866,6 +4879,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(STATUS_BAR_LOGO);
             PRIVATE_SETTINGS.add(MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD);
             PRIVATE_SETTINGS.add(WEATHER_LOCKSCREEN_UNIT);
+            PRIVATE_SETTINGS.add(VOLUME_KEYS_CONTROL_RING_TONE);
         }
 
         /**
@@ -4966,6 +4980,7 @@ public final class Settings {
             VALIDATORS.put(ONE_HAND_MODE_ENABLED, ONE_HAND_MODE_ENABLED_VALIDATOR);
             VALIDATORS.put(MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD, MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD_VALIDATOR);
             VALIDATORS.put(WEATHER_LOCKSCREEN_UNIT, WEATHER_LOCKSCREEN_UNIT_VALIDATOR);
+            VALIDATORS.put(VOLUME_KEYS_CONTROL_RING_TONE,VOLUME_KEYS_CONTROL_RING_TONE_VALIDATOR);
         }
 
         /**

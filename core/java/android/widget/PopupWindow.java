@@ -1285,6 +1285,17 @@ public class PopupWindow {
         }
     }
 
+    private boolean isSetLayoutDirectionFromAnchor() {
+        if (mPopupViewInitialLayoutDirectionInherited && mDecorView != null && mAnchor != null) {
+            View anchor = mAnchor.get();
+            if (anchor != null
+                    && (mDecorView.getLayoutDirection() != anchor.getLayoutDirection())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * <p>Generate the layout parameters for the popup window.</p>
      *
@@ -1715,6 +1726,10 @@ public class PopupWindow {
             update = true;
         }
 
+        if (isSetLayoutDirectionFromAnchor()) {
+            update = true;
+        }
+
         if (update) {
             setLayoutDirectionFromAnchor();
             mWindowManager.updateViewLayout(mDecorView, p);
@@ -1818,6 +1833,10 @@ public class PopupWindow {
         final int newFlags = computeFlags(p.flags);
         if (newFlags != p.flags) {
             p.flags = newFlags;
+            update = true;
+        }
+
+        if (isSetLayoutDirectionFromAnchor()) {
             update = true;
         }
 

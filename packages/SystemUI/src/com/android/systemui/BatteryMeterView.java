@@ -44,7 +44,8 @@ public class BatteryMeterView extends View implements DemoMode,
     public static final String ACTION_LEVEL_TEST = "com.android.systemui.BATTERY_LEVEL_TEST";
 
     private static final int FULL = 96;
-
+    private static final int ADD_LEVEL = 10;
+    private static final int ANIM_DURATION = 500;
     private static final float BOLT_LEVEL_THRESHOLD = 0.3f;  // opaque bolt below this fraction
 
     private final int[] mColors;
@@ -219,6 +220,7 @@ public class BatteryMeterView extends View implements DemoMode,
     public BatteryMeterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
+        mHandler = new Handler();
         final Resources res = context.getResources();
         TypedArray atts = context.obtainStyledAttributes(attrs, R.styleable.BatteryMeterView,
                 defStyle, 0);
@@ -430,6 +432,32 @@ public class BatteryMeterView extends View implements DemoMode,
 
     private int getColorForDarkIntensity(float darkIntensity, int lightColor, int darkColor) {
         return (int) ArgbEvaluator.getInstance().evaluate(darkIntensity, lightColor, darkColor);
+    }
+
+    private int updateChargingAnimLevel(BatteryTracker tracker) {
+        int curLevel = tracker.level;
+
+        if (tracker.status != BatteryManager.BATTERY_STATUS_CHARGING) {
+            if (mIsCharging) {
+                mIsCharging = false;
+                mAnimOffset = 0;
+                mHandler.removeCallbacks(mInvalidate);
+            }
+        } else {
+            mIsCharging = true;
+
+            curLevel += mAnimOffset;
+            if (curLevel >= FULL) {
+                curLevel = 100;
+                mAnimOffset = 0;
+            } else {
+                mAnimOffset += ADD_LEVEL;
+            }
+
+            mHandler.removeCallbacks(mInvalidate);
+            mHandler.postDelayed(mInvalidate, ANIM_DURATION);
+        }
+        return curLevel;
     }
 
     @Override

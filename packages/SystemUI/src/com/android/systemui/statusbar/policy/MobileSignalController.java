@@ -900,7 +900,11 @@ public class MobileSignalController extends SignalController<
                         + " dataState=" + state.getDataRegState());
             }
             mServiceState = state;
+<<<<<<< HEAD
             updateNetworkName(mLastShowSpn, mLastSpn, mLastDataSpn, mLastShowPlmn, mLastPlmn);
+=======
+            mDataNetType = state.getDataNetworkType();
+>>>>>>> android-6.0.1_r22
             updateTelephony();
         }
 

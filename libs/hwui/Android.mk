@@ -206,6 +206,7 @@ hwui_c_includes += \
 
 include $(CLEAR_VARS)
 
+LOCAL_SDCLANG_LTO := true
 LOCAL_MODULE_CLASS := STATIC_LIBRARIES
 LOCAL_MODULE := libhwui_static
 LOCAL_CFLAGS := $(hwui_cflags)
@@ -255,6 +256,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 
+LOCAL_SDCLANG_LTO := true
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE := libhwui
 LOCAL_WHOLE_STATIC_LIBRARIES := libhwui_static

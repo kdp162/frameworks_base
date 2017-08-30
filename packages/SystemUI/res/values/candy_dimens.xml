@@ -76,4 +76,10 @@
 
     <!-- Padding needed on bottom of lockscreen for FoD devices -->
     <dimen name="op_keyguard_indication_margin_bottom">420.0px</dimen>
+
+    <!-- QS Headers -->
+    <dimen name="qs_panel_margin_top">25dp</dimen>
+    <dimen name="qs_panel_margin_top_header">85dp</dimen>
+    <dimen name="qs_panel_footer_height">40dp</dimen>
+
 </resources>

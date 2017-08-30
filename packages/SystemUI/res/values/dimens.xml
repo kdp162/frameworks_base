@@ -242,6 +242,12 @@
     <!-- Amount of close_handle that will NOT overlap the notification list -->
     <dimen name="close_handle_underlap">32dp</dimen>
 
+    <!-- Height of the status bar header bar -->
+    <dimen name="status_bar_header_height">124dp</dimen>
+
+    <!-- Height of the status bar header bar when expanded -->
+    <dimen name="status_bar_header_height_expanded">124dp</dimen>
+
     <!-- Height of the status bar header bar in the car setting. -->
     <dimen name="car_status_bar_header_height">128dp</dimen>
 
@@ -265,9 +271,6 @@
 
     <!-- The padding between the notifications and the quick settings container -->
     <dimen name="qs_notification_padding">@dimen/notification_side_paddings</dimen>
-
-    <!-- Height of the status bar header bar when expanded -->
-    <dimen name="status_bar_header_height_expanded">124dp</dimen>
 
     <!-- Height of the status bar header bar when on Keyguard -->
     <dimen name="status_bar_header_height_keyguard">40dp</dimen>

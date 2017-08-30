@@ -27,6 +27,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.AudioManager;
@@ -35,6 +38,9 @@ import android.os.Handler;
 import android.provider.AlarmClock;
 import android.provider.CalendarContract;
 import android.service.notification.ZenModeConfig;
+import android.graphics.PorterDuff.Mode;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.support.annotation.VisibleForTesting;
 import android.widget.FrameLayout;
 import android.text.format.DateUtils;
@@ -46,7 +52,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.android.settingslib.Utils;
@@ -54,6 +60,7 @@ import com.android.systemui.BatteryMeterView;
 import com.android.systemui.Dependency;
 import com.android.systemui.Prefs;
 import com.android.systemui.R;
+import com.android.systemui.omni.StatusBarHeaderMachine;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.QSDetail.Callback;
 import com.android.systemui.statusbar.phone.PhoneStatusBarView;
@@ -75,7 +82,8 @@ import java.util.Objects;
  * battery) and also contains the {@link QuickQSPanel} along with some of the panel's inner
  * contents.
  */
-public class QuickStatusBarHeader extends RelativeLayout implements
+public class QuickStatusBarHeader extends FrameLayout implements StatusBarHeaderMachine.IStatusBarHeaderMachineObserver {
+    private static final String TAG = "QuickStatusBarHeader";
         View.OnClickListener, NextAlarmController.NextAlarmChangeCallback,
         ZenModeController.Callback {
     private static final String TAG = "QuickStatusBarHeader";
@@ -142,6 +150,10 @@ public class QuickStatusBarHeader extends RelativeLayout implements
      * Runnable for automatically fading out the long press tooltip (as if it were animating away).
      */
     private final Runnable mAutoFadeOutTooltipRunnable = () -> hideLongPressTooltip(false);
+
+    // omni additions
+    private ImageView mBackgroundImage;
+    private Drawable mCurrentBackground;
 
     public QuickStatusBarHeader(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -249,6 +261,8 @@ public class QuickStatusBarHeader extends RelativeLayout implements
 
         return isOriginalVisible != ringerVisible ||
                 !Objects.equals(originalRingerText, mRingerModeTextView.getText());
+
+        mBackgroundImage = (ImageView) findViewById(R.id.qs_header_image);
     }
 
     private boolean updateAlarmStatus() {
@@ -341,6 +355,7 @@ public class QuickStatusBarHeader extends RelativeLayout implements
 
         updateStatusIconAlphaAnimator();
         updateHeaderTextContainerAlphaAnimator();
+        updateQsPanelLayout();
     }
 
     private void updateStatusIconAlphaAnimator() {
@@ -626,6 +641,7 @@ public class QuickStatusBarHeader extends RelativeLayout implements
     public void setQSPanel(final QSPanel qsPanel) {
         mQsPanel = qsPanel;
         setupHost(qsPanel.getHost());
+        updateQsPanelLayout();
     }
 
     public void setupHost(final QSTileHost host) {
@@ -675,6 +691,91 @@ public class QuickStatusBarHeader extends RelativeLayout implements
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) v.getLayoutParams();
             lp.leftMargin = sideMargins;
             lp.rightMargin = sideMargins;
+        }
+    }
+
+    @Override
+    public void updateHeader(final Drawable headerImage, final boolean force) {
+        post(new Runnable() {
+             public void run() {
+                doUpdateStatusBarCustomHeader(headerImage, force);
+                updateQsPanelLayout();
+            }
+        });
+    }
+
+    @Override
+    public void disableHeader() {
+        post(new Runnable() {
+             public void run() {
+                mCurrentBackground = null;
+                mBackgroundImage.setVisibility(View.GONE);
+                updateQsPanelLayout();
+            }
+        });
+    }
+
+    @Override
+    public void refreshHeader() {
+        post(new Runnable() {
+             public void run() {
+                doUpdateStatusBarCustomHeader(mCurrentBackground, true);
+            }
+        });
+    }
+
+    private void doUpdateStatusBarCustomHeader(final Drawable next, final boolean force) {
+        if (next != null) {
+            Log.i(TAG, "Updating status bar header background");
+            mBackgroundImage.setVisibility(View.VISIBLE);
+            mCurrentBackground = next;
+            setNotificationPanelHeaderBackground(next, force);
+        } else {
+            mCurrentBackground = null;
+            mBackgroundImage.setVisibility(View.GONE);
+        }
+    }
+
+    private void setNotificationPanelHeaderBackground(final Drawable dw, final boolean force) {
+        if (mBackgroundImage.getDrawable() != null && !force) {
+            Drawable[] arrayDrawable = new Drawable[2];
+            arrayDrawable[0] = mBackgroundImage.getDrawable();
+            arrayDrawable[1] = dw;
+
+            TransitionDrawable transitionDrawable = new TransitionDrawable(arrayDrawable);
+            transitionDrawable.setCrossFadeEnabled(true);
+            mBackgroundImage.setImageDrawable(transitionDrawable);
+            transitionDrawable.startTransition(1000);
+        } else {
+            mBackgroundImage.setImageDrawable(dw);
+        }
+        applyHeaderBackgroundShadow();
+    }
+
+    private void applyHeaderBackgroundShadow() {
+        final int headerShadow = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_CUSTOM_HEADER_SHADOW, 0,
+                UserHandle.USER_CURRENT);
+
+        if (mCurrentBackground != null) {
+            if (headerShadow != 0) {
+                int shadow = Color.argb(headerShadow, 0, 0, 0);
+                mCurrentBackground.setColorFilter(shadow, Mode.SRC_ATOP);
+            } else {
+                mCurrentBackground.setColorFilter(null);
+            }
+        }
+    }
+
+    private void updateQsPanelLayout() {
+        if (mQsPanel != null) {
+            final Resources res = mContext.getResources();
+            int panelMarginTop = res.getDimensionPixelSize(mCurrentBackground != null ?
+                    R.dimen.qs_panel_margin_top_header :
+                    R.dimen.qs_panel_margin_top);
+            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) mQsPanel.getLayoutParams();
+            layoutParams.topMargin = panelMarginTop;
+            mQsPanel.setLayoutParams(layoutParams);
         }
     }
 }

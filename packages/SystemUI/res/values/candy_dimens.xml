@@ -73,4 +73,9 @@
 
     <!-- The padding on the start and the end of the statusbar -->
     <dimen name="status_bar_extra_padding">0dp</dimen>
+
+    <!-- Scrolling QS -->
+    <dimen name="qs_scroller_margin">8dp</dimen>
+    <dimen name="qs_scroller_top_margin">40dp</dimen>
+
 </resources>

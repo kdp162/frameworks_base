@@ -46,7 +46,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 
 import com.android.settingslib.Utils;
@@ -142,6 +142,8 @@ public class QuickStatusBarHeader extends RelativeLayout implements
      * Runnable for automatically fading out the long press tooltip (as if it were animating away).
      */
     private final Runnable mAutoFadeOutTooltipRunnable = () -> hideLongPressTooltip(false);
+
+    private HorizontalScrollView mQuickQsPanelScroller;
 
     public QuickStatusBarHeader(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -265,6 +267,9 @@ public class QuickStatusBarHeader extends RelativeLayout implements
 
         return isOriginalVisible != alarmVisible ||
                 !Objects.equals(originalAlarmText, mNextAlarmTextView.getText());
+
+        mQuickQsPanelScroller = (HorizontalScrollView) findViewById(R.id.quick_qs_panel_scroll);
+        mQuickQsPanelScroller.setHorizontalScrollBarEnabled(false);
     }
 
     private void applyDarkness(int id, Rect tintArea, float intensity, int color) {
@@ -676,5 +681,13 @@ public class QuickStatusBarHeader extends RelativeLayout implements
             lp.leftMargin = sideMargins;
             lp.rightMargin = sideMargins;
         }
+      }
+
+    public void onClosingFinished() {
+        mQuickQsPanelScroller.scrollTo(0, 0);
+    }
+
+    public void updateSettings() {
+        mHeaderQsPanel.updateSettings();
     }
 }

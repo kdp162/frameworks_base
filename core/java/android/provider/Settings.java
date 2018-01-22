@@ -4817,6 +4817,13 @@ public final class Settings {
         public static final String POWERMENU_AIRPLANE = "powermenu_airplane";
 
         /**
+         * Custom header image provider
+         * @hide
+         */
+        public static final String STATUS_BAR_FILE_HEADER_IMAGE = "status_bar_file_header_image";
+
+        /**
+         * location of the clear all rectents button
          * @hide
          */
         public static final String USE_OLD_MOBILETYPE = "use_old_mobiletype";

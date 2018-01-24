@@ -6267,7 +6267,6 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
 
         public void update() {
-            setLockscreenDoubleTapToSleep();
             setStatusBarWindowViewOptions();
             setLockscreenMediaMetadata();
             setStatusbarBatterySaverColor();
@@ -6277,13 +6276,6 @@ public class StatusBar extends SystemUI implements DemoMode,
             updateRecentsMode();
             updateTickerSettings();
             updateDozeBrightness();
-        }
-    }
-
-    private void setLockscreenDoubleTapToSleep() {
-        if (mStatusBarWindow != null) {
-            mStatusBarWindow.setLockscreenDoubleTapToSleep();
-            setStatusBarWindowViewOptions();
         }
     }
 

@@ -476,9 +476,6 @@ public class StatusBar extends SystemUI implements DemoMode,
      */
     private boolean mAlwaysExpandNonGroupedNotification;
 
-    // quick settings
-    private int mQsLayoutColumns;
-
     // settings
     private QSPanel mQSPanel;
 
@@ -619,6 +616,8 @@ public class StatusBar extends SystemUI implements DemoMode,
     protected PorterDuffXfermode mSrcOverXferMode =
             new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER);
 
+    private NotificationManager mNoMan;
+    private String[] mNavMediaArrowsExcludeList;
     private MediaSessionManager mMediaSessionManager;
     private MediaController mMediaController;
     private String mMediaNotificationKey;
@@ -661,13 +660,26 @@ public class StatusBar extends SystemUI implements DemoMode,
     };
 
     public void setMediaPlaying() {
-        if (mNavigationBar != null) {
-            if (PlaybackState.STATE_PLAYING ==
-                    getMediaControllerPlaybackState(mMediaController)
-                    || PlaybackState.STATE_BUFFERING ==
-                    getMediaControllerPlaybackState(mMediaController)) {
+        if (PlaybackState.STATE_PLAYING ==
+                getMediaControllerPlaybackState(mMediaController)
+                || PlaybackState.STATE_BUFFERING ==
+                getMediaControllerPlaybackState(mMediaController)) {
+            tickTrackInfo(mMediaController);
+            final String currentPkg = mMediaController.getPackageName().toLowerCase();
+            for (String packageName : mNavMediaArrowsExcludeList) {
+                if (currentPkg.contains(packageName)) {
+                    return;
+                }
+            }
+            if (mNavigationBar != null) {
                 mNavigationBar.setMediaPlaying(true);
-            } else {
+            }
+        } else {
+            if (mAmbientMediaPlaying != 0 && mAmbientIndicationContainer != null) {
+                ((AmbientIndicationContainer)mAmbientIndicationContainer).hideIndication();
+            }
+            mNotificationPanel.getKeyguardStatusView().setPlayingMediaText(null);
+            if (mNavigationBar != null) {
                 mNavigationBar.setMediaPlaying(false);
             }
         }
@@ -6342,6 +6354,21 @@ public class StatusBar extends SystemUI implements DemoMode,
                 mSlimRecents.removeSbCallbacks();
                 mSlimRecents = null;
             }
+        }
+    }
+
+    private void rebuildRecentsScreen() {
+        if (mSlimRecents != null) {
+            mSlimRecents.rebuildRecentsScreen();
+        }
+    }
+
+    private void setForceAmbient() {
+        mAmbientMediaPlaying = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.FORCE_AMBIENT_FOR_MEDIA, 0,
+                UserHandle.USER_CURRENT);
+        if (mAmbientMediaPlaying != 0 && mAmbientIndicationContainer != null) {
+            ((AmbientIndicationContainer)mAmbientIndicationContainer).setIndication(mMediaMetadata);
         }
     }
 

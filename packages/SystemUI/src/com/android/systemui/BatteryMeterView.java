@@ -237,6 +237,14 @@ public class BatteryMeterView extends LinearLayout implements
                         : R.string.accessibility_battery_level, level));
     }
 
+    private boolean isCircleBattery() {
+        return mStyle == BatteryMeterDrawableBase.BATTERY_STYLE_BIG_CIRCLE
+                || mStyle == BatteryMeterDrawableBase.BATTERY_STYLE_BIG_DOTTED_CIRCLE
+                || mStyle == BatteryMeterDrawableBase.BATTERY_STYLE_CIRCLE
+                || mStyle == BatteryMeterDrawableBase.BATTERY_STYLE_DOTTED_CIRCLE
+                || mStyle == BatteryMeterDrawableBase.BATTERY_STYLE_SQUARE;
+    }
+
     @Override
     public void onPowerSaveChanged(boolean isPowerSave) {
         mDrawable.setPowerSave(isPowerSave);

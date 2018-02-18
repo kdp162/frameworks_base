@@ -7988,6 +7988,7 @@ public final class Settings {
          * 2: Display the battery as a dotted circle
          * 3: Display the battery as text
          * 4: Do not display the battery
+         * 6: Display the battery as a square
          * default: 0
          * @hide
          */

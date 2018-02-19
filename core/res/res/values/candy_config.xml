@@ -80,4 +80,7 @@
          backgrounds (requires config_allowNotificationIconTinting to be true)-->
     <bool name="config_useDarkBgNotificationIconTinting">false</bool>
 
+    <!-- In call notification vibration strength -->
+    <integer name="config_in_call_notification_vibration_strength">30</integer>
+
 </resources>

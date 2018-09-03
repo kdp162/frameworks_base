@@ -26,6 +26,8 @@ import com.android.systemui.plugins.qs.QSTile.BooleanState;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.SecureSetting;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
+import com.android.systemui.plugins.ActivityStarter;
+import com.android.systemui.statusbar.policy.KeyguardMonitor;
 import com.android.systemui.statusbar.policy.BatteryController;
 
 import javax.inject.Inject;
@@ -43,11 +45,15 @@ public class BatterySaverTile extends QSTileImpl<BooleanState> implements
 
     private Icon mIcon = ResourceIcon.get(com.android.internal.R.drawable.ic_qs_battery_saver);
 
+    private final KeyguardMonitor mKeyguard;
+    private final KeyguardCallback mKeyguardCallback = new KeyguardCallback();
+
     @Inject
     public BatterySaverTile(QSHost host, BatteryController batteryController) {
         super(host);
         mBatteryController = batteryController;
         mBatteryController.observe(getLifecycle(), this);
+        mKeyguard = Dependency.get(KeyguardMonitor.class);
         mSetting = new SecureSetting(mContext, mHandler, Secure.LOW_POWER_WARNING_ACKNOWLEDGED) {
             @Override
             protected void handleValueChanged(int value, boolean observedChange) {
@@ -84,6 +90,17 @@ public class BatterySaverTile extends QSTileImpl<BooleanState> implements
 
     @Override
     protected void handleClick() {
+        if (mKeyguard.isSecure() && mKeyguard.isShowing()) {
+            Dependency.get(ActivityStarter.class).postQSRunnableDismissingKeyguard(() -> {
+                mHost.openPanels();
+                handleClickInner();
+            });
+            return;
+        }
+        handleClickInner();
+    }
+
+    private void handleClickInner() {
         if (getState().state == Tile.STATE_UNAVAILABLE) {
             return;
         }
@@ -120,4 +137,11 @@ public class BatterySaverTile extends QSTileImpl<BooleanState> implements
         mPowerSave = isPowerSave;
         refreshState(null);
     }
+
+    private final class KeyguardCallback implements KeyguardMonitor.Callback {
+        @Override
+        public void onKeyguardShowingChanged() {
+            refreshState();
+        }
+    };
 }

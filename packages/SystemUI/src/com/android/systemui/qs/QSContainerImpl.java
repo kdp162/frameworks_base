@@ -21,6 +21,7 @@ import static android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -60,9 +61,6 @@ public class QSContainerImpl extends FrameLayout implements
     private int mSideMargins;
     private boolean mQsDisabled;
 
-    public QSContainerImpl(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
     // custom headers
     private boolean mHeaderImageEnabled;
     private ImageView mBackgroundImage;
@@ -70,6 +68,8 @@ public class QSContainerImpl extends FrameLayout implements
     private Drawable mCurrentBackground;
     private boolean mLandscape;
 
+    public QSContainerImpl(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
     @Override

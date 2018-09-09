@@ -35,7 +35,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 
 import com.android.systemui.R;
-import com.android.internal.util.aquarios.AquaUtils;
+import com.android.internal.util.candy.CandyUtils;
 
 public class StaticHeaderProvider implements
         StatusBarHeaderMachine.IStatusBarHeaderProvider {
@@ -103,7 +103,7 @@ public class StaticHeaderProvider implements
         if (mRes == null) {
             return null;
         }
-        if (!AquaUtils.isPackageAvailable(mPackageName, mContext)) {
+        if (!CandyUtils.isPackageAvailable(mPackageName, mContext)) {
             Log.w(TAG, "Header pack image " + mImage + " no longer available");
             return null;
         }

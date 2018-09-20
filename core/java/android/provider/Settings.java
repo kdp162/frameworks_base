@@ -4865,6 +4865,7 @@ public final class Settings {
         * @hide
         */
        public static final String BATTERY_LIGHT_MEDIUM_COLOR = "battery_light_medium_color";
+
         /** @hide */
         private static final Validator BATTERY_LIGHT_MEDIUM_COLOR_VALIDATOR =
                 ANY_STRING_VALIDATOR;
@@ -5020,6 +5021,25 @@ public final class Settings {
          * @hide
          */
         public static final String PULSE_ON_NEW_TRACKS = "pulse_on_new_tracks";
+
+        /**
+         * Clock font size
+         * @hide
+         */
+        public static final String STATUS_BAR_CLOCK_SIZE = "status_bar_clock_size";
+
+        /**
+         * Clock font color
+         * @hide
+         */
+        public static final String STATUS_BAR_CLOCK_COLOR = "status_bar_clock_color";
+
+        /**
+         * Clock font style
+         * @hide
+         */
+        public static final String STATUS_BAR_CLOCK_FONT_STYLE = "status_bar_clock_font_style";
+
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings

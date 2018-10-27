@@ -168,4 +168,9 @@
     <!-- Statusbar Tuner roaming -->
     <string name="status_bar_roaming">Roaming</string>
 
+     <!-- Music tile -->
+    <string name="quick_settings_music_label">Music</string>
+    <string name="quick_settings_music_play">Play</string>
+    <string name="quick_settings_music_pause">Pause</string>
+
 </resources>

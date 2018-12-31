@@ -4672,11 +4672,17 @@ public final class Settings {
          * @hide
          */
         public static final String CUSTOM_AMBIENT_HANDWAVE_GESTURE = "custom_ambient_handwave_gesture";
-         /**
+        /**
          * Custom Ambient pocketmode gesture
          * @hide
          */
         public static final String CUSTOM_AMBIENT_POCKETMODE_GESTURE = "custom_ambient_pocketmode_gesture";
+
+        /**
+         * Select which lockscreen clock style to display
+         * @hide
+         */
+        public static final String LOCKSCREEN_CLOCK_SELECTION = "lockscreen_clock_selection";
 
         /** End of ABC system settings**/
 

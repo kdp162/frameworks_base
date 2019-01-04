@@ -165,11 +165,4 @@ oneway interface IStatusBar
     void toggleFlashlight();
     void toggleNavigationEditor();
     void dispatchNavigationEditorResults(in Intent intent);
-
-    /**
-     * Candy
-     */
-    void handleSystemNavigationKey(in int key);
-    void toggleNavigationBar(boolean enable);
-
 }

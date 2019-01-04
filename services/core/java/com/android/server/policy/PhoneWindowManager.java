@@ -316,7 +316,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.util.List;
-import java.lang.reflect.Constructor;
 
 import dalvik.system.PathClassLoader;
 
@@ -533,7 +532,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     int[] mNavigationBarWidthForRotationDefault = new int[4];
     int[] mNavigationBarHeightForRotationInCarMode = new int[4];
     int[] mNavigationBarWidthForRotationInCarMode = new int[4];
-    private boolean mNavBarOverride;
 
     private LongSparseArray<IShortcutService> mShortcutKeyServices = new LongSparseArray<>();
 
@@ -1133,9 +1131,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.NAVIGATION_BAR_WIDTH), false, this,
-                    UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.Secure.getUriFor(
-                    Settings.Secure.NAVIGATION_BAR_ENABLED), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -2637,20 +2632,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // Allow the navigation bar to move on non-square small devices (phones).
         mNavigationBarCanMove = width != height && shortSizeDp < 600;
 
-        // Allow a system property to override this. Used by the emulator.
-        // See also hasNavigationBar().
-        String navBarOverride = SystemProperties.get("qemu.hw.mainkeys");
-        if ("1".equals(navBarOverride)) {
-            mHasNavigationBar = true;
-        } else if ("0".equals(navBarOverride)) {
-            mHasNavigationBar = false;
-        }
-
-        mHasNavigationBar = !mNavBarOverride && Settings.Secure.getIntForUser(
-                mContext.getContentResolver(), Settings.Secure.NAVIGATION_BAR_ENABLED,
-                res.getBoolean(com.android.internal.R.bool.config_showNavigationBar) ? 1 : 0,
-                UserHandle.USER_CURRENT) == 1;
-
         // For demo purposes, allow the rotation of the HDMI display to be controlled.
         // By default, HDMI locks rotation to landscape.
         if ("portrait".equals(SystemProperties.get("persist.demo.hdmirotation"))) {
@@ -2733,6 +2714,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     public void updateSettings() {
+        final Resources res = mContext.getResources();
         ContentResolver resolver = mContext.getContentResolver();
         boolean updateRotation = false;
         synchronized (mLock) {
@@ -2787,6 +2769,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.THREE_FINGER_GESTURE, 0, UserHandle.USER_CURRENT) == 1;
             enableSwipeThreeFingerGesture(threeFingerGesture);
 
+            // navbar
+            mHasNavigationBar = DeviceUtils.deviceSupportNavigationBar(mContext);
+
             // Configure rotation lock.
             int userRotation = Settings.System.getIntForUser(resolver,
                     Settings.System.USER_ROTATION, Surface.ROTATION_0,
@@ -2833,6 +2818,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mVolumeMusicControl = Settings.System.getIntForUser(resolver,
                     Settings.System.VOLUME_BUTTON_MUSIC_CONTROL, 1,
                     UserHandle.USER_CURRENT) != 0;
+            IStatusBarService sbar = getStatusBarService();
             mUseGestureButton = Settings.System.getIntForUser(resolver,
                     Settings.System.USE_BOTTOM_GESTURE_NAVIGATION, 0,
                     UserHandle.USER_CURRENT) != 0;
@@ -2845,17 +2831,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mTorchActionMode = Settings.Secure.getIntForUser(resolver,
                     Settings.Secure.TORCH_POWER_BUTTON_GESTURE, 0,
                     UserHandle.USER_CURRENT);
-            mHasNavigationBar = !mNavBarOverride && Settings.Secure.getIntForUser(
-                    resolver, Settings.Secure.NAVIGATION_BAR_ENABLED,
-                    mContext.getResources().getBoolean(
-                    com.android.internal.R.bool.config_showNavigationBar) ? 1 : 0,
-                    UserHandle.USER_CURRENT) == 1;
-            IStatusBarService sbar = getStatusBarService();
-            if (sbar != null) {
-                try {
-                    sbar.toggleNavigationBar(mHasNavigationBar);
-                } catch (RemoteException e) {}
-            }
         }
 
         boolean doShowNavbar = Settings.Secure.getIntForUser(resolver,

@@ -535,6 +535,7 @@ public class StatusBar extends SystemUI implements DemoMode,
     private boolean mAutohideSuspended;
     private int mStatusBarMode;
     private int mMaxKeyguardNotifications;
+    private boolean mShowNavBar;
 
     private ViewMediatorCallback mKeyguardViewMediatorCallback;
     protected ScrimController mScrimController;
@@ -635,6 +636,7 @@ public class StatusBar extends SystemUI implements DemoMode,
     private BatteryController mBatteryController;
     protected boolean mPanelExpanded;
     private IOverlayManager mOverlayManager;
+    private int mCurrentTheme;
     private boolean mKeyguardRequested;
     private boolean mIsKeyguard;
     private LogMaker mStatusBarStateLog;
@@ -679,6 +681,8 @@ public class StatusBar extends SystemUI implements DemoMode,
     private boolean mVibrateOnOpening;
     private VibratorHelper mVibratorHelper;
 
+    private boolean mLockscreenMediaMetadata;
+
     @Override
     public void start() {
         mGroupManager = Dependency.get(NotificationGroupManager.class);
@@ -700,6 +704,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         mLockscreenUserManager = Dependency.get(NotificationLockscreenUserManager.class);
         mGutsManager = Dependency.get(NotificationGutsManager.class);
         mMediaManager = Dependency.get(NotificationMediaManager.class);
+        mMediaManager.addCallback(this);
         mEntryManager = Dependency.get(NotificationEntryManager.class);
         mViewHierarchyManager = Dependency.get(NotificationViewHierarchyManager.class);
         mAppOpsListener = Dependency.get(AppOpsListener.class);
@@ -1712,6 +1717,10 @@ public class StatusBar extends SystemUI implements DemoMode,
     @Override
     public void updateMediaMetaData(boolean metaDataChanged, boolean allowEnterAnimation) {
         Trace.beginSection("StatusBar#updateMediaMetaData");
+
+        // ensure visualizer is visible regardless of artwork
+        mMediaManager.setMediaPlaying();
+
         if (!SHOW_LOCKSCREEN_MEDIA_ARTWORK) {
             Trace.endSection();
             return;
@@ -1741,7 +1750,7 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
 
         Drawable artworkDrawable = null;
-        if (mediaMetadata != null) {
+        if (mediaMetadata != null && mLockscreenMediaMetadata) {
             Bitmap artworkBitmap = mediaMetadata.getBitmap(MediaMetadata.METADATA_KEY_ART);
             if (artworkBitmap == null) {
                 artworkBitmap = mediaMetadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
@@ -1774,14 +1783,6 @@ public class StatusBar extends SystemUI implements DemoMode,
         mColorExtractor.setHasBackdrop(hasArtwork);
         if (mScrimController != null) {
             mScrimController.setHasBackdrop(hasArtwork);
-        }
-
-        if (!mKeyguardFadingAway && keyguardVisible && hasArtwork && mScreenOn) {
-            // if there's album art, ensure visualizer is visible
-            mVisualizerView.setPlaying(mMediaManager.getMediaController() != null
-                    && mMediaManager.getMediaController().getPlaybackState() != null
-                    && mMediaManager.getMediaController().getPlaybackState().getState()
-                            == PlaybackState.STATE_PLAYING);
         }
 
         if (keyguardVisible && mKeyguardShowingMedia &&
@@ -2388,26 +2389,6 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
         if (mFlashlightController.isAvailable()) {
             mFlashlightController.setFlashlight(!mFlashlightController.isEnabled());
-        }
-    }
-
-    public void toggleNavigationBar(boolean enable) {
-        if (enable) {
-            if (mNavigationBarView == null) {
-                try {
-                    createNavigationBar();
-                } catch (Exception e) {
-                    // monkey tapping the toggle more times and too fast
-                }
-            }
-        } else {
-            if (mNavigationBarView != null){
-                FragmentHostManager fm = FragmentHostManager.get(mNavigationBarView);
-                mWindowManager.removeViewImmediate(mNavigationBarView);
-                mNavigationBarView = null;
-                fm.getFragmentManager().beginTransaction().remove(mNavigationBar).commit();
-                mNavigationBar = null;
-            }
         }
     }
 
@@ -4086,6 +4067,11 @@ public class StatusBar extends SystemUI implements DemoMode,
         Trace.endSection();
     }
 
+    private void getCurrentThemeSetting() {
+        mCurrentTheme = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.SYSTEM_THEME, 0, mLockscreenUserManager.getCurrentUserId());
+    }
+
     /**
      * Switches theme from light to dark and vice-versa.
      */
@@ -5295,6 +5281,25 @@ public class StatusBar extends SystemUI implements DemoMode,
         }
     }
 
+    private void updateNavigationBar() {
+        mShowNavBar = DeviceUtils.deviceSupportNavigationBarForUser(mContext,
+                              mLockscreenUserManager.getCurrentUserId());
+        if (mShowNavBar) {
+            if (mNavigationBarView == null) {
+                    mNavigationBarView =
+                        (NavigationBarView) View.inflate(mContext, R.layout.navigation_bar, null);
+                createNavigationBar();
+                checkBarModes();
+                notifyUiVisibilityChanged(mSystemUiVisibility);
+            }
+        } else {
+            if (mNavigationBarView != null){
+                mWindowManager.removeViewImmediate(mNavigationBarView);
+                mNavigationBarView = null;
+            }
+        }
+    }
+
     public boolean shouldIgnoreTouch() {
         return isDozing() && mDozeServiceHost.mIgnoreTouchWhilePulsing;
     }
@@ -5400,6 +5405,12 @@ public class StatusBar extends SystemUI implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN),
                     false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_TILE_TITLE_VISIBILITY),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LOCKSCREEN_MEDIA_METADATA),
+                    false, this, UserHandle.USER_ALL);
         }
 
         @Override
@@ -5421,11 +5432,22 @@ public class StatusBar extends SystemUI implements DemoMode,
             } else if (uri.equals(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN))) {
                 setStatusBarWindowViewOptions();
+            } else if (uri.equals(Settings.System.getUriFor(Settings.System.QS_ROWS_PORTRAIT)) ||
+                    uri.equals(Settings.System.getUriFor(Settings.System.QS_ROWS_LANDSCAPE)) ||
+                    uri.equals(Settings.System.getUriFor(Settings.System.QS_COLUMNS_PORTRAIT)) ||
+                    uri.equals(Settings.System.getUriFor(Settings.System.QS_COLUMNS_LANDSCAPE)) ||
+                    uri.equals(Settings.System.getUriFor(Settings.System.QS_TILE_TITLE_VISIBILITY))) {
+                updateQsPanelResources();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.LOCKSCREEN_MEDIA_METADATA))) {
+                setLockscreenMediaMetadata();
             }
         }
 
         public void update() {
             setStatusBarWindowViewOptions();
+            updateQsPanelResources();
+            setLockscreenMediaMetadata();
         }
     }
 
@@ -5433,6 +5455,17 @@ public class StatusBar extends SystemUI implements DemoMode,
         if (mStatusBarWindow != null) {
             mStatusBarWindow.setStatusBarWindowViewOptions();
         }
+    }
+
+    private void updateQsPanelResources() {
+        if (mQSPanel != null) {
+            mQSPanel.updateResources();
+        }
+    }
+
+    private void setLockscreenMediaMetadata() {
+        mLockscreenMediaMetadata = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.LOCKSCREEN_MEDIA_METADATA, 0, UserHandle.USER_CURRENT) == 1;
     }
 
     private final BroadcastReceiver mBannerActionBroadcastReceiver = new BroadcastReceiver() {

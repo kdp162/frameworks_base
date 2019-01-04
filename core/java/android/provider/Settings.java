@@ -3950,7 +3950,8 @@ public final class Settings {
         public static final String DOCK_SOUNDS_ENABLED = Global.DOCK_SOUNDS_ENABLED;
 
         private static final Validator DOCK_SOUNDS_ENABLED_VALIDATOR = BOOLEAN_VALIDATOR;
-	/**
+
+	    /**
          * Check the proximity sensor during wakeup
          * @hide
          */
@@ -4493,6 +4494,53 @@ public final class Settings {
          * @hide
          */
         public static final String FORCE_EXPANDED_NOTIFICATIONS = "force_expanded_notifications";
+
+
+        /**
+         *  Weather to use a custom color for the visualizer on the lock screen
+         * @hide
+         */
+        public static final String LOCK_SCREEN_VISUALIZER_USE_CUSTOM_COLOR = "lock_screen_visualizer_use_custom_color";
+
+        /**
+         *  Custom color of the visualizer on the lock screen
+         * @hide
+         */
+        public static final String LOCK_SCREEN_VISUALIZER_CUSTOM_COLOR = "lock_screen_visualizer_custom_color";
+
+        /**
+         * @hide
+         */
+        public static final String FULL_GESTURE_NAVBAR = "full_gesture_navbar";
+
+        /**
+         * @hide
+         */
+        public static final String FULL_GESTURE_NAVBAR_DT2S = "full_gesture_navbar_dt2s";
+
+        /**
+        * Whether to show media art on lockscreen
+        * @hide
+        */
+       public static final String LOCKSCREEN_MEDIA_METADATA = "lockscreen_media_metadata";
+
+        /**
+         * Whether to display qs tile titles in the qs panel
+         * @hide
+         */
+        public static final String QS_TILE_TITLE_VISIBILITY = "qs_tile_title_visibility";
+
+        /**
+         * Enable\Disable Bluetooth Battery bar
+         * @hide
+         */
+        public static final String BLUETOOTH_SHOW_BATTERY = "bluetooth_show_battery";
+
+        /**
+         * Whether to display the 4g or lte network icon in the statusbar
+         * @hide
+         */
+        public static final String SHOW_LTE_FOURGEE = "show_lte_fourgee";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
@@ -8114,6 +8162,12 @@ public final class Settings {
          */
         public static final int VR_DISPLAY_MODE_OFF = 1;
 
+        /** Whether to vibrate when quick settings tile is pressed.
+          *
+          * @hide
+          */
+         public static final String QUICK_SETTINGS_TILES_VIBRATE = "quick_settings_vibrate";
+
         /**
          * Whether CarrierAppUtils#disableCarrierAppsUntilPrivileged has been executed at least
          * once.
@@ -8347,7 +8401,7 @@ public final class Settings {
 
         /**
          * What behavior should be invoked when the volume hush gesture is triggered
-         * One of VOLUME_HUSH_OFF, VOLUME_HUSH_VIBRATE, VOLUME_HUSH_MUTE.
+         * One of VOLUME_HUSH_OFF, VOLUME_HUSH_VIBRATE, VOLUME_HUSH_MUTE, VOLUME_HUSH_MUTE_NO_MEDIA.
          *
          * @hide
          */
@@ -8356,6 +8410,7 @@ public final class Settings {
         /** @hide */ public static final int VOLUME_HUSH_OFF = 0;
         /** @hide */ public static final int VOLUME_HUSH_VIBRATE = 1;
         /** @hide */ public static final int VOLUME_HUSH_MUTE = 2;
+        /** @hide */ public static final int VOLUME_HUSH_MUTE_NO_MEDIA = 3;
 
         private static final Validator VOLUME_HUSH_GESTURE_VALIDATOR =
                 NON_NEGATIVE_INTEGER_VALIDATOR;
@@ -8383,12 +8438,6 @@ public final class Settings {
          */
         public static final String SUPPRESS_AUTO_BATTERY_SAVER_SUGGESTION =
                 "suppress_auto_battery_saver_suggestion";
-
-         /**
-         * Whether to enable navigation bar
-         * @hide
-         */
-        public static final String NAVIGATION_BAR_ENABLED = "navigation_bar_enabled";
 
         /**
          * List of packages, which data need to be unconditionally cleared before full restore.

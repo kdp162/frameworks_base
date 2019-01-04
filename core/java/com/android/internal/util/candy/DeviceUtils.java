@@ -26,6 +26,8 @@ import android.hardware.display.WifiDisplayStatus;
 import android.net.ConnectivityManager;
 import android.nfc.NfcAdapter;
 import android.provider.Settings;
+import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
@@ -96,6 +98,24 @@ public class DeviceUtils {
     public static boolean deviceSupportsTorch(Context context) {
         // Need to be adapted to new torch API
         return true;
+    }
+
+    public static boolean deviceSupportNavigationBar(Context context) {
+        return deviceSupportNavigationBarForUser(context, UserHandle.USER_CURRENT);
+    }
+
+     public static boolean deviceSupportNavigationBarForUser(Context context, int userId) {
+        final boolean showByDefault = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_showNavigationBar);
+
+        String navBarOverride = SystemProperties.get("qemu.hw.mainkeys");
+        if ("1".equals(navBarOverride)) {
+            return false;
+        } else if ("0".equals(navBarOverride)) {
+            return true;
+        } else {
+            return showByDefault;
+        }
     }
 
     public static FilteredDeviceFeaturesArray filterUnsupportedDeviceFeatures(Context context,

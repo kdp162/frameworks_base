@@ -4153,10 +4153,12 @@ public class StatusBar extends SystemUI implements DemoMode,
         if (isUsingDarkTheme() != useDarkTheme) {
             unfuckBlackWhiteAccent(); // Check for black and white accent
             ThemeAccentUtils.setLightDarkTheme(mOverlayManager, mLockscreenUserManager.getCurrentUserId(), useDarkTheme);
+                mNotificationPanel.setLockscreenClockTheme(useDarkTheme);
         }
         if (isUsingBlackTheme() != useBlackTheme) {
             unfuckBlackWhiteAccent(); // Check for black and white accent
             ThemeAccentUtils.setLightBlackTheme(mOverlayManager, mLockscreenUserManager.getCurrentUserId(), useBlackTheme);
+                mNotificationPanel.setLockscreenClockTheme(useDarkTheme);
         }
 
         // Lock wallpaper defines the color of the majority of the views, hence we'll use it

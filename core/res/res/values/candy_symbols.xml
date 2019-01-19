@@ -84,8 +84,6 @@
     <!-- Whether or not swipe up gesture's opt-in setting is available on this device -->
     <java-symbol type="bool" name="config_custom_swipe_up_gesture_setting_available" />
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     <!-- True if the notifications should dynamically tint the app icon -->
     <java-symbol type="bool" name="config_allowNotificationIconTinting" />
     <!-- True if the notification's dynamic app icon tint should be optimised for dark

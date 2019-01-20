@@ -4856,7 +4856,7 @@ public class NotificationManagerService extends SystemService {
             boolean notificationIsAnnoying = notificationIsAnnoying(key, pkg);
             boolean beNoisy = (!mScreenOn && !notificationIsAnnoying)
                     // if mScreenOn && !mSoundVibScreenOn never be noisy
-                    || (mScreenOn && mSoundVibScreenOn && !notificationIsAnnoying(pkg));
+                    || (mScreenOn && mSoundVibScreenOn && !notificationIsAnnoying);
             if (mSystemReady && mAudioManager != null && beNoisy) {
                 Uri soundUri = record.getSound();
                 hasValidSound = soundUri != null && !Uri.EMPTY.equals(soundUri);

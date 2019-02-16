@@ -23,6 +23,7 @@ import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
 import android.telephony.SubscriptionManager;
@@ -62,7 +63,6 @@ public class CellularTile extends QSTileImpl<SignalState> {
     private final NetworkController mController;
     private final DataUsageController mDataController;
     private final CellularDetailAdapter mDetailAdapter;
-    private final KeyguardMonitor mKeyguard;
 
     private final CellSignalCallback mSignalCallback = new CellSignalCallback();
     private final ActivityStarter mActivityStarter;
@@ -83,7 +83,6 @@ public class CellularTile extends QSTileImpl<SignalState> {
         mDataController = mController.getMobileDataController();
         mDetailAdapter = new CellularDetailAdapter();
         mController.observe(getLifecycle(), mSignalCallback);
-        mKeyguard = keyguardMonitor;
     }
 
     @Override
@@ -120,13 +119,13 @@ public class CellularTile extends QSTileImpl<SignalState> {
         if (getState().state == Tile.STATE_UNAVAILABLE) {
             return;
         }
-         if (mKeyguard.isSecure() && !mKeyguardMonitor.canSkipBouncer() && mKeyguard.isShowing()) {
-                mActivityStarter.postQSRunnableDismissingKeyguard(() -> {
-                    mHost.openPanels();
-                    showDetail(true);
-                });
-                return;
-            }
+        if (mKeyguard.isSecure() && mKeyguard.isShowing() && isUnlockingRequired()) {
+            Dependency.get(ActivityStarter.class).postQSRunnableDismissingKeyguard(() -> {
+                mHost.openPanels();
+                mDataController.setMobileDataEnabled(true);
+            });
+            return;
+        }
         if (mDataController.isMobileDataEnabled()) {
             if (mKeyguard.isSecure() && mKeyguard.isShowing()) {
                 mActivityStarter.postQSRunnableDismissingKeyguard(this::maybeShowDisableDialog);
@@ -136,6 +135,12 @@ public class CellularTile extends QSTileImpl<SignalState> {
         } else {
             mDataController.setMobileDataEnabled(true);
         }
+    }
+
+    private boolean isUnlockingRequired() {
+        return (Settings.Secure.getIntForUser(
+                mContext.getContentResolver(), Settings.Secure.QSTILE_REQUIRES_UNLOCKING, 1,
+                UserHandle.USER_CURRENT) == 1);
     }
 
     private void maybeShowDisableDialog() {

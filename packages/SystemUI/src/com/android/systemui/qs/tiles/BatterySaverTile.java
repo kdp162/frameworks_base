@@ -16,6 +16,8 @@
 package com.android.systemui.qs.tiles;
 
 import android.content.Intent;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.service.quicksettings.Tile;
 import android.widget.Switch;
@@ -29,6 +31,7 @@ import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.statusbar.policy.KeyguardMonitor;
 import com.android.systemui.statusbar.policy.BatteryController;
+import com.android.systemui.Dependency;
 
 import javax.inject.Inject;
 
@@ -90,7 +93,7 @@ public class BatterySaverTile extends QSTileImpl<BooleanState> implements
 
     @Override
     protected void handleClick() {
-        if (mKeyguard.isSecure() && mKeyguard.isShowing()) {
+        if (mKeyguard.isSecure() && mKeyguard.isShowing() && isUnlockingRequired()) {
             Dependency.get(ActivityStarter.class).postQSRunnableDismissingKeyguard(() -> {
                 mHost.openPanels();
                 handleClickInner();
@@ -105,6 +108,12 @@ public class BatterySaverTile extends QSTileImpl<BooleanState> implements
             return;
         }
         mBatteryController.setPowerSaveMode(!mPowerSave);
+    }
+
+    private boolean isUnlockingRequired() {
+        return (Settings.Secure.getIntForUser(
+                mContext.getContentResolver(), Settings.Secure.QSTILE_REQUIRES_UNLOCKING, 1,
+                UserHandle.USER_CURRENT) == 1);
     }
 
     @Override

@@ -391,6 +391,8 @@
 
     <dimen name="volume_dialog_panel_transparent_padding_vertical">20dp</dimen>
 
+    <dimen name="volume_dialog_panel_transparent_padding">20dp</dimen>
+
     <dimen name="volume_dialog_stream_padding">8dp</dimen>
 
     <dimen name="volume_dialog_panel_width">64dp</dimen>

@@ -97,6 +97,7 @@ import com.android.systemui.plugins.VolumeDialog;
 import com.android.systemui.plugins.VolumeDialogController;
 import com.android.systemui.plugins.VolumeDialogController.State;
 import com.android.systemui.plugins.VolumeDialogController.StreamState;
+import com.android.systemui.statusbar.phone.ExpandableIndicator;
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
@@ -141,6 +142,8 @@ public class VolumeDialogImpl implements VolumeDialog,
     private CaptionsToggleImageButton mODICaptionsIcon;
     private View mSettingsView;
     private ImageButton mSettingsIcon;
+    private View mExpandRowsView;
+    private ExpandableIndicator mExpandRows;
     private FrameLayout mZenIcon;
     private final List<VolumeRow> mRows = new ArrayList<>();
     private ConfigurableTexts mConfigurableTexts;
@@ -153,6 +156,8 @@ public class VolumeDialogImpl implements VolumeDialog,
 
     private boolean mShowing;
     private boolean mShowA11yStream;
+
+    private boolean mExpanded;
 
     private int mActiveStream;
     private int mPrevActiveStream;
@@ -255,6 +260,7 @@ public class VolumeDialogImpl implements VolumeDialog,
         mConfigurableTexts = new ConfigurableTexts(mContext);
         mHovering = false;
         mShowing = false;
+        mExpanded = false;
         mWindow = mDialog.getWindow();
         mWindow.requestFeature(Window.FEATURE_NO_TITLE);
         mWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -454,6 +460,12 @@ public class VolumeDialogImpl implements VolumeDialog,
         }
     }
 
+    private void updateAllActiveRows() {
+        int N = mRows.size();
+        for (int i = 0; i < N; i++)
+            updateVolumeRowH(mRows.get(i));
+    }
+
     private VolumeRow getActiveRow() {
         for (VolumeRow row : mRows) {
             if (row.stream == mActiveStream) {
@@ -548,6 +560,15 @@ public class VolumeDialogImpl implements VolumeDialog,
         }
     }
 
+    private void cleanExpandRows() {
+        for(int i = mRows.size() - 1; i >= 0; i--) {
+            final VolumeRow row = mRows.get(i);
+            if (row.stream == AudioManager.STREAM_RING ||
+                    row.stream == AudioManager.STREAM_ALARM)
+                removeRow(row);
+        }
+    }
+
     public void initSettingsH() {
         if (mSettingsView != null) {
             mSettingsView.setVisibility(
@@ -564,6 +585,30 @@ public class VolumeDialogImpl implements VolumeDialog,
                         true /* dismissShade */);
             });
         }
+        mExpandRowsView.setVisibility(
+                mDeviceProvisionedController.isCurrentUserSetup() ? VISIBLE : GONE);
+        mExpandRows.setOnLongClickListener(v -> {
+            Events.writeEvent(mContext, Events.EVENT_SETTINGS_CLICK);
+            Intent intent = new Intent(Settings.ACTION_SOUND_SETTINGS);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            dismissH(DISMISS_REASON_SETTINGS_CLICKED);
+            Dependency.get(ActivityStarter.class).startActivity(intent, true /* dismissShade */);
+            return true;
+        });
+        mExpandRows.setOnClickListener(v -> {
+            if(!mExpanded) {
+                addRow(AudioManager.STREAM_RING,
+                        R.drawable.ic_volume_notification, R.drawable.ic_volume_notification_mute, true, false);
+                addRow(AudioManager.STREAM_ALARM,
+                        R.drawable.ic_volume_alarm, R.drawable.ic_volume_alarm_mute, true, false);
+                updateAllActiveRows();
+                mExpanded = true;
+            } else {
+                cleanExpandRows();
+                mExpanded = false;
+            }
+            mExpandRows.setExpanded(mExpanded);
+        });
     }
 
     public void initRingerH() {
@@ -852,6 +897,10 @@ public class VolumeDialogImpl implements VolumeDialog,
                 mSafetyWarning.dismiss();
             }
         }
+
+        cleanExpandRows();
+        mExpanded = false;
+        mExpandRows.setExpanded(mExpanded);
     }
 
     private boolean showActiveStreamOnly() {
@@ -918,7 +967,8 @@ public class VolumeDialogImpl implements VolumeDialog,
         for (final VolumeRow row : mRows) {
             final boolean isActive = row == activeRow;
             final boolean shouldBeVisible = shouldBeVisibleH(row, activeRow);
-            Util.setVisOrGone(row.view, shouldBeVisible);
+            if (!mExpanded)
+                Util.setVisOrGone(row.view, shouldBeVisible);
             if (row.view.isShown()) {
                 updateVolumeRowTintH(row, isActive);
             }

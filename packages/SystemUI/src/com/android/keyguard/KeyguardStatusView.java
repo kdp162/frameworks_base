@@ -580,7 +580,7 @@ public class KeyguardStatusView extends GridLayout implements
         }
     }
 
-    private void updateSettings() {
+    public void updateSettings() {
         final ContentResolver resolver = getContext().getContentResolver();
 
         mShowClock = Settings.System.getIntForUser(resolver,

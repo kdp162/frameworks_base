@@ -168,6 +168,7 @@ import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.MessagingGroup;
 import com.android.internal.widget.MessagingMessage;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
+import com.android.keyguard.KeyguardStatusView;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.ViewMediatorCallback;
@@ -5580,6 +5581,7 @@ public class StatusBar extends SystemUI implements DemoMode,
     private DeviceProvisionedController mDeviceProvisionedController
             = Dependency.get(DeviceProvisionedController.class);
 
+    protected KeyguardStatusView mKeyguardStatusView;
     // UI-specific methods
 
     protected WindowManager mWindowManager;
@@ -5683,6 +5685,7 @@ public class StatusBar extends SystemUI implements DemoMode,
                     Settings.System.ACCENT_PICKER))) {
                 unloadAccents(); // Unload the accents when users request it
                 updateAccents(); // Update the accents when users request it
+                mKeyguardStatusView.updateSettings();
             } else if (uri.equals(Settings.System.getUriFor(
                     Settings.System.QS_TILE_STYLE))) {
                 unlockQsTileStyles();
@@ -5723,6 +5726,7 @@ public class StatusBar extends SystemUI implements DemoMode,
             setStatusBarWindowViewOptions();
             updateQsPanelResources();
             setLockscreenMediaMetadata();
+            updateKeyguardStatusSettings();
         }
     }
 
@@ -5736,6 +5740,7 @@ public class StatusBar extends SystemUI implements DemoMode,
                     Settings.System.USE_OLD_MOBILETYPE, 0,
                     UserHandle.USER_CURRENT) != 0;
             TelephonyIcons.updateIcons(USE_OLD_MOBILETYPE);
+            
         }
     }
 

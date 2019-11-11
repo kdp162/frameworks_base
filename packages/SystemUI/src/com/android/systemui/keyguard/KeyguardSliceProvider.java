@@ -50,6 +50,7 @@ import androidx.slice.builders.ListBuilder.RowBuilder;
 import androidx.slice.builders.SliceAction;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.candy.CandyUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.R;
@@ -335,9 +336,15 @@ public class KeyguardSliceProvider extends SliceProvider implements
                                  Integer.toString(temperatureMetric) + "°C" :
                                  Integer.toString(temperatureImperial) + "°F";
         Icon conditionIcon = Icon.createWithResource(getContext(), mWeatherInfo.getWeatherConditionImage());
+        IconCompat iconCompat;
+        if (conditionIcon == null) {
+            iconCompat = null;
+        } else {
+            iconCompat = IconCompat.createWithBitmap(CandyUtils.drawableToBitmap(conditionIcon.loadDrawable(getContext())));
+        }
         RowBuilder weatherRowBuilder = new RowBuilder(mWeatherUri)
                 .setTitle(temperatureText)
-                .addEndItem(conditionIcon);
+                .addEndItem(iconCompat, ListBuilder.ICON_IMAGE);
         builder.addRow(weatherRowBuilder);
     }
 
